@@ -1,13 +1,14 @@
 # coding: utf-8
 
-from fabkit import Service, Package, env, filer, run, api, sudo
+from fabkit import Service, Package, filer, run, api, sudo
+from fablib.base import SimpleBase
 
 
-class MySQL:
+class MySQL(SimpleBase):
     def __init__(self):
-        self.key = 'mysql'
-        self.mysqld = Service('mysqld')
-        self.is_init = False
+        self.data_key = 'mysql'
+        self.services = ['mysqld']
+        self.packages = ['mysql', 'mysql-server']
 
         self.data = {
             'root_password': 'rootpass',
@@ -16,24 +17,14 @@ class MySQL:
             'databases': {},
         }
 
-    def get_init_data(self):
-        if not self.is_init:
-            if self.key in env.cluster:
-                self.data.update(env.cluster[self.key])
-            self.is_init = True
-
-        return self.data
-
     def setup(self):
         data = self.get_init_data()
-
-        Package('mysql').install()
-        Package('mysql-server').install()
+        self.install_packages()
         is_updated = filer.template('/etc/my.cnf', data=data)
 
-        self.mysqld.enable().start()
+        self.enable_services().start_services()
         if is_updated:
-            self.mysqld.restart()
+            self.restart_services()
 
         # setup root user
         with api.warn_only():
@@ -62,12 +53,12 @@ class MySQL:
                         host=user.get('host', 'localhost'),
                     )
 
-        return self.sql(query)
+                    self.sql(query)
 
     def create_databases(self):
         data = self.get_init_data()
         with api.warn_only():
-            for dbname in data['databases']:
-                result = self.sql('use {0}'.format(dbname))
+            for db in data['databases'].values():
+                result = self.sql('use {0}'.format(db['dbname']))
                 if result.return_code != 0:
-                    self.sql('CREATE DATABASE {0}'.format(dbname))
+                    self.sql('CREATE DATABASE {0}'.format(db['dbname']))
