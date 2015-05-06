@@ -1,3 +1,3 @@
 # coding: utf-8
 
-from mariadb import MariaDB  # noqa
+from mysql import MySQL  # noqa
