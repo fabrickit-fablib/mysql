@@ -1,14 +1,20 @@
 # coding: utf-8
 
-from fabkit import Service, Package, filer, run, api, sudo
+from fabkit import filer, run, api, sudo
 from fablib.base import SimpleBase
 
 
 class MySQL(SimpleBase):
     def __init__(self):
         self.data_key = 'mysql'
-        self.services = ['mysqld']
-        self.packages = ['mysql', 'mysql-server']
+        self.services = {
+            'CentOS 6.*': ['mysqld'],
+            'CentOS 7.*': ['mariadb'],
+        }
+        self.packages = {
+            'CentOS 6.*': ['mysql', 'mysql-server'],
+            'CentOS 7.*': ['mariadb', 'mariadb-server'],
+        }
 
         self.data = {
             'root_password': 'rootpass',
