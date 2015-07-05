@@ -1,6 +1,6 @@
 # coding: utf-8
 
-from fabkit import filer, run, api, sudo
+from fabkit import filer, api, sudo
 from fablib.base import SimpleBase
 
 
@@ -9,45 +9,52 @@ class MySQL(SimpleBase):
         self.data_key = 'mysql'
         self.services = {
             'CentOS 6.*': ['mysqld'],
-            'CentOS 7.*': ['mariadb'],
+            'CentOS 7.*': ['mysqld'],
         }
         self.packages = {
             'CentOS 6.*': ['mysql', 'mysql-server'],
-            'CentOS 7.*': ['mariadb', 'mariadb-server'],
+            'CentOS 7.*': [
+                {
+                    'name': 'mysql-community-release',
+                    'path': 'http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm',
+                },
+                'mysql-community-server',
+            ],
         }
 
         self.data = {
-            'root_password': 'rootpass',
             'port': 3306,
             'users': {},
             'databases': {},
         }
 
     def setup(self):
-        data = self.get_init_data()
+        data = self.init()
         self.install_packages()
+
         is_updated = filer.template('/etc/my.cnf', data=data)
 
         self.enable_services().start_services()
         if is_updated:
             self.restart_services()
 
-        # setup root user
-        with api.warn_only():
-            result = run('mysql -uroot -p{0} -e "show status;"'.format(data['root_password']))
-            if result.return_code != 0:
-                sudo('mysqladmin password {0} -uroot'.format(data['root_password']))
-                result = run('mysql -uroot -p{0} -e "show status;"'.format(data['root_password']))
+        # get root_password or init root_password
+        if filer.exists('/root/.my.cnf'):
+            root_password = sudo("grep ^password /root/.my.cnf | head -1 | awk '{print $3}'")
+        else:
+            root_password = sudo('cat /dev/urandom | tr -dc "[:alnum:]" | head -c 32')
+            sudo('mysqladmin password {0} -uroot'.format(root_password))
+            filer.template('/root/.my.cnf', data={'root_password': root_password})
 
         self.create_users()
         self.create_databases()
 
     def sql(self, query):
-        data = self.get_init_data()
-        return run('mysql -uroot -p{0} -e"{1}"'.format(data['root_password'], query))
+        self.init()
+        return sudo('mysql -uroot -e"{0}"'.format(query))
 
     def create_users(self):
-        data = self.get_init_data()
+        data = self.init()
         for username, user in data['users'].items():
             for dbname, db in data['databases'].items():
                 if db.get('user') == username:
@@ -62,9 +69,9 @@ class MySQL(SimpleBase):
                     self.sql(query)
 
     def create_databases(self):
-        data = self.get_init_data()
+        data = self.init()
         with api.warn_only():
             for db in data['databases'].values():
                 result = self.sql('use {0}'.format(db['dbname']))
                 if result.return_code != 0:
-                    self.sql('CREATE DATABASE {0}'.format(db['dbname']))
+                    self.sql('CREATE DATABASE {0} DEFAULT CHARACTER SET utf8;'.format(db['dbname']))
