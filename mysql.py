@@ -8,12 +8,10 @@ class MySQL(SimpleBase):
     def __init__(self):
         self.data_key = 'mysql'
         self.services = {
-            'CentOS 6.*': ['mysqld'],
-            'CentOS 7.*': ['mysqld'],
+            'CentOS Linux 7.*': ['mysqld'],
         }
         self.packages = {
-            'CentOS 6.*': ['mysql', 'mysql-server'],
-            'CentOS 7.*': [
+            'CentOS Linux 7.*': [
                 {
                     'name': 'mysql-community-release',
                     'path': 'http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm',
@@ -32,7 +30,8 @@ class MySQL(SimpleBase):
         data = self.init()
         self.install_packages()
 
-        is_updated = filer.template('/etc/my.cnf', data=data)
+        filer.mkdir('/etc/mysql')
+        is_updated = filer.template('/etc/mysql/my.cnf', data=data)
 
         self.enable_services().start_services()
         if is_updated:
