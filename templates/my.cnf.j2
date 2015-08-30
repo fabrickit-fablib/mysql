@@ -5,7 +5,7 @@
 ##--------------------------------------------------------------------
 # mysqldの基本設定
 ##--------------------------------------------------------------------
-server-id = 1
+server-id = {{ node.ip.default_dev.ip|replace('.', '') }}
 user = mysql
 
 # 文字セット指定
@@ -19,6 +19,10 @@ default-storage-engine  = innodb
 # レコード基盤のReplicationをするためにはREAD-COMMITED
 # DefaultはREPEATABLE-READ
 transaction-isolation = REPEATABLE-READ
+
+# GTIDを有効にする
+gtid-mode = ON
+
 
 ##--------------------------------------------------------------------
 # Network 設定
@@ -173,7 +177,7 @@ sort_buffer_size = 4MB #128kb
 # sequentail scan がよく発生するとこの値を増やす必要がある。
 # 単位は Byte. Defaultは 131072 (128K) だ。
 # Dynamic 設定も可能だ。 SET GLOBAL read_buffer_size = 16777216
-read_buffer_size = 131072
+read_buffer_size = 2M
 
 # ソート後にレコードを読むときに使われる領域で、
 # ディスクI/Oが減るためORDER BYの性能向上が期待できる。 1?2Mくらいが妥当？
@@ -181,7 +185,7 @@ read_buffer_size = 131072
 # ORER BY をたくさん使っているのであれば、この値を増やすと、Performance向上の効果が期待できる
 # 単位は Byte. Default 262144(256K) だ。
 # Dynamic 設定は可能だ。 SET GLOBAL read_rnd_buffer_size = 131072
-read_rnd_buffer_size = 1MB
+read_rnd_buffer_size = 16M
 
 # インデックスを用いない全文検索を伴うテーブル結合（フルジョイン）において、
 # レコードデータのキャッシュに使われる領域。
@@ -300,7 +304,7 @@ innodb_old_blocks_time = 500
 # InnoDB 専用サーバーなら物理的なメモリの80%を割り当てても問題ない
 # Default 134217728 (128MB)
 # Dynamic 設定可能。
-innodb_buffer_pool_size = 1GB #1073741824
+innodb_buffer_pool_size = 256M
 
 # 基本的に InnoDBはシステムテーブルスペースと呼ばれるところにすべてのテーブルが生成される。
 # この変数を活性化するとシステムテーブルスペースの代わりにデータとインデックスを別途のファイルに保存する。
@@ -328,7 +332,7 @@ innodb_log_files_in_group = 4
 # ロググループの各ログファイルのサイズを決める。 1MBから innodb_buffer_pool_size/innodb_log_files_in_group で出た値を設定する
 # Default 5MB
 # Dynamic 設定可能。
-innodb_log_file_size = 268435456
+innodb_log_file_size = 256M
 
 # InnoDBログパッファはInnoDBテーブルに対する更新ログ、いわゆるトランザクション
 # ログを管理し、InnoDB専用スレッドやサーバスレッドがアクセスする領域。
@@ -340,7 +344,7 @@ innodb_log_file_size = 268435456
 # ログのBufferのためにサイズを指定。たくさん割り当てる必要はないかも。。
 # Default 8388608 (8MB)
 # Dynamic 設定可能。
-innodb_log_buffer_size = 16777216
+innodb_log_buffer_size = 16M
 
 # InnoDBテーブルの定義情報など、データディクショナリ情報を格納する。
 # この領域が足りなくなったらエラーログに警告を出すとともに、OSのメモリ領域
@@ -425,6 +429,26 @@ innodb_commit_concurrency = 0
 # Dynamic 設定も可能 SET GLOBAL innodb_concurrency_tickets = 500
 innodb_concurrency_tickets = 500
 
+
+##### GTIDに必要な設定 #####
+log-slave-update
+gtid-mode = ON
+enforce-gtid-consistency
+master_info_repository = TABLE
+relay_log_info_repository = TABLE
+# report_host=ホスト名
+
+# sync_binlog = 1
+# server-id = 10
+
+# key_buffer_size = 32M
+
+# replicate-wild-do-table=DATABASE.%
+replicate-wild-ignore-table=mysql.%
+replicate-wild-ignore-table=information_schema.%
+replicate-wild-ignore-table=performance_schema.%
+
+
 ##--------------------------------------------------------------------
 # mysqldump
 ##--------------------------------------------------------------------
@@ -441,7 +465,7 @@ quick
 # これより大きなサイズのデータ通信はできない。
 # デフォルトは1Mだが、大きなサイズのデータを扱う場合はこの値も大きくした方がいい。
 # Default 1M
-max_allowed_packet = 32MB #33554432
+max_allowed_packet = 128MB
 
 ##--------------------------------------------------------------------
 # mysql console
