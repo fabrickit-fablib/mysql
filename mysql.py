@@ -28,7 +28,7 @@ class MySQL(SimpleBase):
             ],
         }
 
-    def init_data(self):
+    def init_after(self):
         for cluster in self.data.values():
             if env.host in cluster['hosts']:
                 self.data['mysql_cluster'] = cluster
@@ -36,28 +36,33 @@ class MySQL(SimpleBase):
 
     def setup(self):
         self.init()
-        self.install_packages()
         cluster = self.data['mysql_cluster']
 
-        filer.mkdir('/etc/mysql')
-        is_updated = filer.template('/etc/mysql/my.cnf', data=self.data)
+        if self.is_tag('package'):
+            self.install_packages()
 
-        self.enable_services().start_services()
-        if is_updated:
-            self.restart_services()
+        if self.is_tag('conf'):
+            filer.mkdir('/etc/mysql')
+            is_updated = filer.template('/etc/mysql/my.cnf', data=self.data)
 
-        # get root_password or init root_password
-        if filer.exists('/root/.my.cnf'):
-            root_password = sudo("grep ^password /root/.my.cnf | head -1 | awk '{print $3}'")
-        else:
-            root_password = sudo('cat /dev/urandom | tr -dc "[:alnum:]" | head -c 32')
-            sudo('mysqladmin password {0} -uroot'.format(root_password))
-            filer.template('/root/.my.cnf', data={'root_password': root_password})
+        if self.is_tag('service'):
+            self.enable_services().start_services()
+            if is_updated:
+                self.restart_services()
 
-        self.create_users()
-        self.delete_default_users()
-        if env.host == cluster['hosts'][0]:
-            self.create_databases()
+        if self.is_tag('data'):
+            # get root_password or init root_password
+            if filer.exists('/root/.my.cnf'):
+                root_password = sudo("grep ^password /root/.my.cnf | head -1 | awk '{print $3}'")
+            else:
+                root_password = sudo('cat /dev/urandom | tr -dc "[:alnum:]" | head -c 32')
+                sudo('mysqladmin password {0} -uroot'.format(root_password))
+                filer.template('/root/.my.cnf', data={'root_password': root_password})
+
+            self.create_users()
+            self.delete_default_users()
+            if env.host == cluster['hosts'][0]:
+                self.create_databases()
 
     def setup_slave(self):
         self.init()
