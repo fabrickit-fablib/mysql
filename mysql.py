@@ -15,7 +15,9 @@ class MySQL(SimpleBase):
         }
 
         self.services = {
-            'CentOS Linux 7.*': ['mysqld'],
+            'CentOS Linux 7.*': [
+                'mysqld',
+            ],
         }
 
         self.packages = {
@@ -34,6 +36,19 @@ class MySQL(SimpleBase):
                 self.data['mysql_cluster'] = cluster
                 break
 
+        phpmyadmin = self.data['mysql_cluster']['phpmyadmin']
+        if phpmyadmin['enable']:
+            self.packages['CentOS Linux 7.*'].extend([
+                'httpd',
+                'php',
+                'phpMyAdmin',
+                'php-mysql',
+                'php-mcrypt',
+            ])
+            self.services['CentOS Linux 7.*'].append('httpd')
+            self.update_packages()
+            self.update_services()
+
     def setup(self):
         self.init()
         cluster = self.data['mysql_cluster']
@@ -43,12 +58,16 @@ class MySQL(SimpleBase):
 
         if self.is_tag('conf'):
             filer.mkdir('/etc/mysql')
-            is_updated = filer.template('/etc/mysql/my.cnf', data=self.data)
+            if filer.template('/etc/mysql/my.cnf', data=self.data):
+                self.handlers['restart_mysqld'] = True
+            if cluster['phpmyadmin']['enable']:
+                if filer.template('/etc/httpd/conf.d/phpMyAdmin.conf',
+                                  data=cluster['phpmyadmin']):
+                    self.handlers['restart_httpd'] = True
 
         if self.is_tag('service'):
             self.enable_services().start_services()
-            if is_updated:
-                self.restart_services()
+            self.exec_handlers()
 
         if self.is_tag('data'):
             # get root_password or init root_password
