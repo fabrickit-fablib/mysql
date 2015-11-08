@@ -41,6 +41,7 @@ class MySQL(SimpleBase):
             self.packages['CentOS Linux 7.*'].extend([
                 'httpd',
                 'php',
+                'epel-release',
                 'phpMyAdmin',
                 'php-mysql',
                 'php-mcrypt',
