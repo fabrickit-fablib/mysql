@@ -1,0 +1,9 @@
+env:
+  port: 31022
+
+node_map:
+  centos7:
+    hosts:
+      - localhost
+    fabruns:
+      - test/base

@@ -1,0 +1,23 @@
+node_map:
+  base:
+    hosts:
+      - localhost
+    fabruns:
+      - test_bootstrap/base
+
+test_bootstrap:
+  dockers:
+    - name: centos7
+      template: Dockerfile_centos7
+      sudo_group: wheel
+      ports:
+        - [22, 31022]
+        - [80, 31080]
+        - [3306, 31306]
+    - name: ubuntu14
+      template: Dockerfile_ubuntu14
+      sudo_group: sudo
+      ports:
+        - [22, 32022]
+        - [80, 32080]
+        - [3306, 32306]

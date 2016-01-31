@@ -1,20 +1,12 @@
 # fablib mysql
 
-## Example Attributes
+## Overview
+This is mysql of fablib.
 
-``` yaml
-mysql:
-  root_password: rootpass
-  users:
-    openstack:
-      password: openstackpass
-      host: localhost
-      privileges: ALL PRIVILEGES
-  databases:
-    keystone: 
-      user: openstack
-    nova: 
-      user: openstack
-    cinder: 
-      user: openstack
+## Testing Guidelines
 ```
+$ tox
+```
+
+## License
+This is licensed under the MIT. See the [LICENSE](./LICENSE) file for details.
