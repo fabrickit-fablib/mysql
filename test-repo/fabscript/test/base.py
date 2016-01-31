@@ -1,11 +1,11 @@
 # coding: utf-8
 
 from fabkit import task
-from fablib.sample import Sample
+from fablib.mysql import MySQL
 
-sample = Sample()
+mysql = MySQL()
 
 
 @task
 def setup():
-    sample.setup()
+    mysql.setup()
