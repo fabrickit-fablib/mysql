@@ -1,9 +1,22 @@
-env:
-  port: 31022
-
 node_map:
-  centos7:
+  cluster1:
     hosts:
-      - localhost
+      - 192.168.122.50
+      - 192.168.122.51
     fabruns:
       - test/base
+
+mysql:
+  clusters:
+    cluster1:
+      user_map:
+        slave:
+          user: slave
+          password: slavepass
+          src_hosts:
+            - '192.168.122.0/255.255.255.0'
+          previleges: 'REPLICATION SLAVE'
+
+      hosts: ${#node_map.cluster1.hosts}
+      replication:
+        types: [master, master]

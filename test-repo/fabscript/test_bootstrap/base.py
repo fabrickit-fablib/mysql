@@ -1,11 +1,11 @@
 # cording: utf-8
 
 from fabkit import task
-from fablib.test_bootstrap import docker
+from fablib.test_bootstrap import Libvirt
 
-bootstrap = docker.Docker()
+libvirt = Libvirt()
 
 
 @task
 def setup():
-    bootstrap.setup()
+    libvirt.setup()

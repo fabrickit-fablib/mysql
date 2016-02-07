@@ -5,7 +5,7 @@
 ##--------------------------------------------------------------------
 # mysqldの基本設定
 ##--------------------------------------------------------------------
-server-id = {{ node.ip.default_dev.ip|replace('.', '') }}
+server-id = {{ server_id }}
 user = mysql
 
 # 文字セット指定
@@ -21,7 +21,7 @@ default-storage-engine  = innodb
 transaction-isolation = REPEATABLE-READ
 
 # GTIDを有効にする
-gtid-mode = ON
+# gtid-mode = ON
 
 
 ##--------------------------------------------------------------------
@@ -68,62 +68,62 @@ max_allowed_packet = 33554432
 # 一般的なQueryのLog(general query log)とSlow Query Log(slow query log)が出力される場所を指定する
 # このオプションは他のオプションより強い権限がある。この値が NONE の場合には、の他のオプションでログを記録するように設定しててもログは記録されない。
 # Dynamic での設定も可能だ SET GLOBAL log_output = FILE
-log_output = FILE
+# log_output = FILE
 
 # Aborted connection..のような警告を error Logに書く。 Replicationを使っている場合、このオプションを使うのをお勧めする
 # Defaultは 1.
 # Dynamic の設定が可能である。 SET GLOBAL log_warnings = 131072
-log_warnings = 1
+# log_warnings = 1
 
 # エラーとかMysqlのStartのログファイルを指定。
 # ファイル名を指定しないと host_name.err を使用する。拡張子を指定しないと .err が自動的に付く。
 # Defaultはない。 Dynamic の設定は出来ない。
-log_error = /usr/local/mysql/current/logs/mysqld_error.log
+# log_error = /usr/local/mysql/current/logs/mysqld_error.log
 
 # 一般的なQueryログ(general query log)の使用有無を決める。 log_output の値が NONE なら、この値は無視される。
 # Defaultは 0(0)
 # Dynamic の設定も可能だ。 SET GLOBAL log_output = 0
-general_log = 0
+# general_log = 0
 
 # すべてのQueryを記録するファイルを指定。QueryログもしくはGeneralログと呼ばれる。
 # ファイル名を指定しないと host_name.log になる。
 # Dynamic での設定は可能だ。 SET GLOBAL general_log_file = /usr/local/mysql/current/logs/general_query_all.log
-general_log_file = /usr/local/mysql/current/logs/general_query_all.log
+# general_log_file = /usr/local/mysql/current/logs/general_query_all.log
 
 # "OPTIMIZE TABLE, ANALYZE TABLE, and ALTER TABLE" のような管理命令について slow query を残すかどうかを決める。
 # Default 0
 # Dynamic の設定は出来ない。
-log-slow-admin-statements = 1
+# log-slow-admin-statements = 1
 
 # Index処理されない Full Scan のようなQueryについてのLog処理有無を決める。
 # Default 0
 # Dynamic の設定は可能だ。 SET GLOBAL log-queries-not-using-indexes = 1
-log-queries-not-using-indexes = 1
+# log-queries-not-using-indexes = 1
 
 # Slow Query Logを記録するかどうかを決める。 log_output の値が NONE なら、この値は無視される。(ON/OFF)
 # Default 0
 # Dynamic の設定は可能だ。 SET GLOBAL slow_query_log = 0
-slow_query_log = 1
+# slow_query_log = 1
 
 # Slow Queryを記録する時間。この時間より大きいと記録される。(この時間が過ぎても処理が終わらないと)
 # 値は 0 ~ 10 の間だ
 # Default 10.
 # Dynamic で設定も可能だ。 SET GLOBAL long_query_time = 1
-long_query_time = 2
+# long_query_time = 2
 
 # Slow Query Logファイルを指定
 # ログファイル名を設定しないと host_name-slow.log になる
 # Dynamic で設定も可能。 SET GLOBAL slow_query_log_file = /usr/local/mysql/current/logs/slow_query.log
-slow_query_log_file = /usr/local/mysql/current/logs/slow_query.log
+# slow_query_log_file = /usr/local/mysql/current/logs/slow_query.log
 
 # バイナリログを使う場合は
 # ログファイルの名前を入力する
-log-bin=mysql-bin
+# log-bin=mysql-bin
 
 # バイナリログを自動削除する日数
 # Deafult 0.
 # Dynamic の設定は可能だ。 SET GLOBAL expire_logs_days = 5
-expire_logs_days = 5
+# expire_logs_days = 5
 
 ##--------------------------------------------------------------------
 # CacheとMemory
@@ -431,11 +431,11 @@ innodb_concurrency_tickets = 500
 
 
 ##### GTIDに必要な設定 #####
-log-slave-update
-gtid-mode = ON
-enforce-gtid-consistency
-master_info_repository = TABLE
-relay_log_info_repository = TABLE
+# log-slave-update
+# gtid-mode = ON
+# enforce-gtid-consistency
+# master_info_repository = TABLE
+# relay_log_info_repository = TABLE
 # report_host=ホスト名
 
 # sync_binlog = 1
@@ -443,7 +443,12 @@ relay_log_info_repository = TABLE
 
 # key_buffer_size = 32M
 
-# replicate-wild-do-table=DATABASE.%
+log-bin= mysql-bin
+log-slave-update
+gtid-mode = ON
+enforce-gtid-consistency
+
+replicate-wild-do-table=DATABASE.%
 replicate-wild-ignore-table=mysql.%
 replicate-wild-ignore-table=information_schema.%
 replicate-wild-ignore-table=performance_schema.%
