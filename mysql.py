@@ -41,7 +41,7 @@ class MySQL(SimpleBase):
         }
 
     def init_after(self):
-        for cluster in self.data.get('clusters', {}).values():
+        for cluster in self.data.get('cluster_map', {}).values():
             if env.host in cluster['hosts']:
                 self.data.update(cluster)
                 break

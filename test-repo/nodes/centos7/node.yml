@@ -7,7 +7,7 @@ node_map:
       - test/base
 
 mysql:
-  clusters:
+  cluster_map:
     cluster1:
       user_map:
         slave:
