@@ -178,7 +178,7 @@ class MySQL(SimpleBase):
             for db in data['dbs']:
                 result = self.sql('use {0}'.format(db))
                 if result.return_code != 0:
-                    self.sql('CREATE DATABASE {0} DEFAULT CHARACTER SET utf8;'.format(db))
+                    self.sql('CREATE DATABASE {0};'.format(db))
 
     def is_ubuntu(self):
         if re.match('Ubuntu.*', env.node['os']):
