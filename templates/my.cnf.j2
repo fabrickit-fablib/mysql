@@ -20,9 +20,6 @@ default-storage-engine  = innodb
 # DefaultはREPEATABLE-READ
 transaction-isolation = REPEATABLE-READ
 
-# GTIDを有効にする
-# gtid-mode = ON
-
 
 ##--------------------------------------------------------------------
 # Network 設定
@@ -452,6 +449,8 @@ replicate-wild-ignore-table=mysql.%
 replicate-wild-ignore-table=information_schema.%
 replicate-wild-ignore-table=performance_schema.%
 
+auto_increment_increment = 2
+auto_increment_offset = {{ auto_increment_offset }}
 
 ##--------------------------------------------------------------------
 # mysqldump
