@@ -161,7 +161,7 @@ class MySQL(SimpleBase):
         data = self.init()
         for user in data['user_map'].values():
             for db in user.get('dbs', ['*']):
-                if env.host == data['server_id'] == 0:
+                if data['server_id'] == 0 and db != '*':
                     self.sql('CREATE DATABASE IF NOT EXISTS {0};'.format(db))
 
                 for src_host in user.get('src_hosts', ['localhost']):
