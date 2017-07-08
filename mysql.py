@@ -2,7 +2,7 @@
 
 import re
 import socket
-from fabkit import filer, sudo, env
+from fabkit import filer, sudo, env, Package
 from fablib.base import SimpleBase
 
 
@@ -12,7 +12,6 @@ class MySQL(SimpleBase):
         self.data = {
             'port': 3306,
             'user_map': {},
-            'dbs': [],
             'phpmyadmin': {
                 'enable': False
             }
@@ -46,6 +45,9 @@ class MySQL(SimpleBase):
                 self.data.update(cluster)
                 break
 
+        self.data['server_id'] = self.data['hosts'].index(env.host)
+        self.data['auto_increment_offset'] = self.data['server_id'] + 1
+
         phpmyadmin = self.data['phpmyadmin']
         if phpmyadmin['enable']:
             self.packages['CentOS Linux 7.*'].extend([
@@ -75,11 +77,15 @@ class MySQL(SimpleBase):
                 sudo("debconf-set-selections <<< "
                      "'mysql-server mysql-server/root_password_again password tmppass'")
 
+            Package('mariadb-config').uninstall()
+            Package('mariadb-libs').uninstall()
+            Package('mariadb-devel').uninstall()
+            Package('mariadb-common').uninstall()
+
             self.install_packages()
 
         if self.is_tag('conf'):
 
-            data['server_id'] = env.node['ip']['default_dev']['ip'].replace('.', '')[-8:]
             filer.mkdir('/etc/mysql')
             if filer.template('/etc/my.cnf', data=data):
                 self.handlers['restart_mysqld'] = True
@@ -105,8 +111,6 @@ class MySQL(SimpleBase):
 
             self.create_users()
             self.delete_default_users()
-            if env.host == data['hosts'][0]:
-                self.create_databases()
 
     def setup_replication(self):
         data = self.init()
@@ -156,16 +160,20 @@ class MySQL(SimpleBase):
     def create_users(self):
         data = self.init()
         for user in data['user_map'].values():
-            for src_host in user.get('src_hosts', ['localhost']):
-                query = 'GRANT {privileges} ON {table} TO \'{user}\'@\'{host}\' IDENTIFIED BY \'{password}\''.format(  # noqa
-                    privileges=user.get('privileges', 'ALL PRIVILEGES'),
-                    table=user.get('table', '*.*'),
-                    user=user['user'],
-                    password=user['password'],
-                    host=src_host,
-                )
+            for db in user.get('dbs', ['*']):
+                if data['server_id'] == 0 and db != '*':
+                    self.sql('CREATE DATABASE IF NOT EXISTS {0};'.format(db))
 
-                self.sql(query)
+                for src_host in user.get('src_hosts', ['localhost']):
+                    query = 'GRANT {privileges} ON {table} TO \'{user}\'@\'{host}\' IDENTIFIED BY \'{password}\''.format(  # noqa
+                        privileges=user.get('privileges', 'ALL PRIVILEGES'),
+                        table='{0}.*'.format(db),
+                        user=user['user'],
+                        password=user['password'],
+                        host=src_host,
+                    )
+
+                    self.sql(query)
 
     def delete_default_users(self):
         self.init()
