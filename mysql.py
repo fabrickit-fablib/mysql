@@ -111,6 +111,7 @@ class MySQL(SimpleBase):
 
             self.create_users()
             self.delete_default_users()
+            self.create_databases()
 
     def setup_replication(self):
         data = self.init()
