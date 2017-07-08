@@ -1,14 +1,16 @@
 node_map:
-  cluster1:
+  mysql:
     hosts:
-      - 192.168.122.50
-      - 192.168.122.51
+      - 192.168.122.131
+      - 192.168.122.132
     fabruns:
-      - test/base
+      - mysql/base
 
 mysql:
   cluster_map:
-    cluster1:
+    common:
+      hosts: ${#node_map.mysql.hosts}
+      dbs: [sample]
       user_map:
         slave:
           user: slave
@@ -16,7 +18,12 @@ mysql:
           src_hosts:
             - '192.168.122.0/255.255.255.0'
           previleges: 'REPLICATION SLAVE'
+        sample:
+          user: sample
+          password: samplepass
+          src_hosts:
+            - '192.168.122.0/255.255.255.0'
+          previleges: 'ALL PREVILEGES'
 
-      hosts: ${#node_map.cluster1.hosts}
       replication:
         types: [master, master]

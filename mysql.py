@@ -2,7 +2,7 @@
 
 import re
 import socket
-from fabkit import filer, api, sudo, env
+from fabkit import filer, sudo, env
 from fablib.base import SimpleBase
 
 
@@ -174,11 +174,8 @@ class MySQL(SimpleBase):
 
     def create_databases(self):
         data = self.init()
-        with api.warn_only():
-            for db in data['dbs']:
-                result = self.sql('use {0}'.format(db))
-                if result.return_code != 0:
-                    self.sql('CREATE DATABASE {0} DEFAULT CHARACTER SET utf8;'.format(db))
+        for db in data['dbs']:
+            self.sql('CREATE DATABASE IF NOT EXISTS {0} DEFAULT CHARACTER SET utf8;'.format(db))
 
     def is_ubuntu(self):
         if re.match('Ubuntu.*', env.node['os']):
