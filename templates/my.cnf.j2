@@ -25,6 +25,7 @@ transaction-isolation = REPEATABLE-READ
 # Network 設定
 ##--------------------------------------------------------------------
 # サーバーのポート指定
+bind-address = {{ node.ip.default_dev.ip }}
 port = {{ port }}
 
 # Mysql ThreadPool (6.0 only) or mariadb
