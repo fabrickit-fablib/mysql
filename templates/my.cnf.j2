@@ -348,7 +348,7 @@ innodb_log_buffer_size = 16M
 # この領域が足りなくなったらエラーログに警告を出すとともに、OSのメモリ領域
 # から追加で割り当てられる。それほど気にする必要はないが、InnoDBテーブルの
 # 数を多くする場合はこの値も多少増やした方がいい、かも。
-innodb_additional_mem_pool_size = 8MB
+# innodb_additional_mem_pool_size = 8MB
 
 # XA Transactionで two-phase commit を支援するかどうかを決める。
 # 一つのThreadでデータの変更を実行する場合はこのオプションは利用しない方がいい
@@ -442,7 +442,10 @@ innodb_concurrency_tickets = 500
 # key_buffer_size = 32M
 
 log-bin= mysql-bin
+
+{% if version < 5.7 %}
 log-slave-update
+{% endif %}
 gtid-mode = ON
 enforce-gtid-consistency
 
