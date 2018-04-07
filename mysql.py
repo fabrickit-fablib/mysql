@@ -45,8 +45,8 @@ class MySQL(SimpleBase):
                 self.data.update(cluster)
                 break
 
-        self.data['server_id'] = self.data['hosts'].index(env.host)
-        self.data['auto_increment_offset'] = self.data['server_id'] + 1
+        self.data['server_id'] = self.data['hosts'].index(env.host) + 1
+        self.data['auto_increment_offset'] = self.data['server_id']
 
         phpmyadmin = self.data['phpmyadmin']
         if phpmyadmin['enable']:
@@ -102,7 +102,7 @@ class MySQL(SimpleBase):
         if self.is_tag('data'):
             # init root_password
             if not filer.exists('/root/.my.cnf'):
-                root_password = sudo('cat /dev/urandom | tr -dc "[:alnum:]" | head -c 32')
+                root_password = data['root_password']
                 if self.is_ubuntu():
                     sudo('mysqladmin password {0} -uroot -ptmppass'.format(root_password))
                 else:

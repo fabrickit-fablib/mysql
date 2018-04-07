@@ -1,14 +1,14 @@
 node_map:
   mysql:
     hosts:
-      - 192.168.122.131
-      - 192.168.122.132
+      - mysql-centos7-[1-3].example.com
     fabruns:
       - mysql/base
 
 mysql:
   cluster_map:
     common:
+      root_password: rootpass
       hosts: ${#node_map.mysql.hosts}
       dbs: [sample]
       user_map:
@@ -16,14 +16,14 @@ mysql:
           user: slave
           password: slavepass
           src_hosts:
-            - '192.168.122.0/255.255.255.0'
+            - '172.16.100.0/255.255.255.0'
           previleges: 'REPLICATION SLAVE'
         sample:
           user: sample
           password: samplepass
           src_hosts:
-            - '192.168.122.0/255.255.255.0'
+            - '172.16.100.0/255.255.255.0'
           previleges: 'ALL PREVILEGES'
 
       replication:
-        types: [master, master]
+        types: [master, master, slave]

@@ -18,26 +18,39 @@ job:
 container1:
   provider: libvirt
   libvirt:
-    gateway: 192.168.122.1
+    gateway: 172.16.100.1
     netmask: 255.255.255.0
   libvirt_vms:
     - name: mysql-centos7-1
       ports:
-        - {ip: 192.168.122.131, queues: 1, type: virtio}
+        - {ip: 172.16.100.121, queues: 1, type: virtio}
       nameservers:
-        - 192.168.122.1
+        - 172.16.100.1
       template: user-data_centos7
       src_image: http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1511.qcow2c.xz
       vcpus: 1
-      ram: 6144
+      ram: 2048
       disk_size: 40
+      disk_cache: directsync
     - name: mysql-centos7-2
       ports:
-        - {ip: 192.168.122.132, queues: 1, type: virtio}
+        - {ip: 172.16.100.122, queues: 1, type: virtio}
       nameservers:
-        - 192.168.122.1
+        - 172.16.100.1
       template: user-data_centos7
       src_image: http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1511.qcow2c.xz
       vcpus: 1
-      ram: 6144
+      ram: 2048
       disk_size: 40
+      disk_cache: directsync
+    - name: mysql-centos7-3
+      ports:
+        - {ip: 172.16.100.123, queues: 1, type: virtio}
+      nameservers:
+        - 172.16.100.1
+      template: user-data_centos7
+      src_image: http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-1511.qcow2c.xz
+      vcpus: 1
+      ram: 2048
+      disk_size: 40
+      disk_cache: directsync
