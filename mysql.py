@@ -21,7 +21,7 @@ class MySQL(SimpleBase):
             'CentOS Linux 7.*': [
                 'mysql',
             ],
-            'Ubuntu 14.*': [
+            'Ubuntu 16.*': [
                 'mysql',
             ],
         }
@@ -34,8 +34,8 @@ class MySQL(SimpleBase):
                 },
                 'mysql-community-server',
             ],
-            'Ubuntu 14.*': [
-                'mysql-server-5.6',
+            'Ubuntu 16.*': [
+                'mysql-server-5.7',
             ]
         }
 
@@ -77,19 +77,28 @@ class MySQL(SimpleBase):
                 sudo("debconf-set-selections <<< "
                      "'mysql-server mysql-server/root_password_again password tmppass'")
 
-            Package('mariadb-config').uninstall()
-            Package('mariadb-libs').uninstall()
-            Package('mariadb-devel').uninstall()
-            Package('mariadb-common').uninstall()
+            else:
+                Package('mariadb-config').uninstall()
+                Package('mariadb-libs').uninstall()
+                Package('mariadb-devel').uninstall()
+                Package('mariadb-common').uninstall()
 
             self.install_packages()
 
         if self.is_tag('conf'):
 
             filer.mkdir('/etc/mysql')
-            if filer.template('/etc/my.cnf', data=data):
-                self.handlers['restart_mysqld'] = True
-                self.handlers['restart_mysql'] = True
+            if self.is_ubuntu():
+                data['version'] = 5.7
+                if filer.template('/etc/mysql/mysql.cnf', data=data, src='my.cnf'):
+                    self.handlers['restart_mysqld'] = True
+                    self.handlers['restart_mysql'] = True
+            else:
+                data['version'] = 5.6
+                if filer.template('/etc/my.cnf', data=data):
+                    self.handlers['restart_mysqld'] = True
+                    self.handlers['restart_mysql'] = True
+
             if data['phpmyadmin']['enable']:
                 if filer.template('/etc/httpd/conf.d/phpMyAdmin.conf',
                                   data=data['phpmyadmin']):
